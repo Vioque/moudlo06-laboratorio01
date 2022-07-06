@@ -67,21 +67,28 @@ const products = [
     }
 ]
 
-// Montar HTML dinámico
+//Deshabilita el botón
+document.getElementById('button').disabled = true
+
+/* Montar HTML dinámico */
 
 //Input de cada artículo
 var storeQty = (product) => {
     var quantity = document.createElement('input')
     quantity.setAttribute('class', 'product-qty')
+    quantity.setAttribute('id', 'qtyId')
     quantity.setAttribute('type', 'number')
-    quantity.setAttribute('value', 0)
-    quantity.setAttribute('min', 0)
+    quantity.setAttribute('value', '0')
+    quantity.setAttribute('min', '0')
     quantity.setAttribute('max', product.stock)
-    quantity.addEventListener('change', event => product.units = event.target.valueAsNumber)
+    quantity.addEventListener('change', event => {
+        product.units = event.target.valueAsNumber
+        showButton(products)
+    })
     return quantity
 }
 
-// Lista ordenada con los productos
+// Crea una lista ordenada con los productos
 var showProducts = productList => {
     var list = document.getElementById('list')
     for (var product of productList) {
@@ -92,21 +99,43 @@ var showProducts = productList => {
     }
 }
 
+//Muestra la lista
 showProducts(products)
 
-var total = 0
-
-var calculate = () => {
-    console.log(products)
-    for (var product of products) {
-        total += product.units * product.price
+//Habilita el botón Calcular
+var showButton = (productList) => {
+    for (var product of productList) {
+        if (product.units > 0) {
+            document.getElementById('button').disabled = false
+        }
     }
-    console.log(total)
-    return total
+}
 
+var subtotal = 0, taxes = 0, total = 0
+
+// Calcula el resultado
+var calculate = () => {
+    for (var product of products) {
+        if (product.units > 0) {
+            subtotal += product.units * product.price
+            taxes += (subtotal * product.tax / 100)
+        }
+    }
+    total += subtotal + taxes
+    showTotal(subtotal.toFixed(2), taxes.toFixed(2), total.toFixed(2))
+    subtotal = 0
+    taxes = 0
+    total = 0
+    document.getElementById('button').disabled = true
+    reset(products)
+}
+
+// Muestra el resultado
+var showTotal = (subtotal, taxes, total) => {
+    document.getElementById('subtotal').innerHTML = 'Subtotal: ' + subtotal + '€'
+    document.getElementById('taxes').innerHTML = 'IVA: ' + taxes + '€'
+    document.getElementById('total').innerHTML = 'TOTAL: ' + total + '€'
 }
 
 document.getElementById('button').addEventListener('click', calculate)
-
-console.log(total)
 
